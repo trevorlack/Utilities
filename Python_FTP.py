@@ -37,22 +37,25 @@ MySite.RemoteFilterInclude = '*SP5MAIG*;'
 #Result = MySite.GetList (MySite.RemoteFolder, "C:/Users/tlack/Documents/Python Scripts/Yieldbook/ftplist.txt", "*SP5*")
 Result = MySite.GetList("/Inbox","C:/temp_list.txt","%NAME")
 FileLister = MySite.GetResult
-FTP_list = pd.read_table('C:/temp_list.txt', header=None)
+FTP_list = pd.read_table('C:/temp_list.txt', header=None, names='p')
+FTP_list = pd.DataFrame(FTP_list)
+FTP_list['date'] = FTP_list['p'].str[0:8]
+#FTP_list = FTP_list.rename(columns={'':'path'})
+print(FTP_list)
 counter = 0
+prior = 0
 CLS_Convert_List = []
 for i in range(0, len(FTP_list)-1):
-    checker = int(FTP_list.iloc[i].str[0:8])
+    checker = int(FTP_list['date'].iloc[i])
+    file = FTP_list['p'].iloc[i]
+    print(checker)
+    print(file)
     if checker > Max_Date:
-        checker = str(checker)
-        checker1 = str(checker + '_SP5MAIG.SPL')
-        checker2 = str(checker + '_SP5MAIG_CLS.SPFIC')
-        checker3 = str(checker + '_SP5MAIG.SPFIL')
-        MySite.Download(checker1)
-        MySite.Download(checker2)
-        MySite.Download(checker3)
-        counter = counter + 1
-        CLS_Convert_List.append(checker)
-
+        MySite.Download(file)
+        if checker != prior:
+            counter = counter + 1
+        CLS_Convert_List.append(str(checker))
+        prior = checker
 if counter == 0:
     print('No new Investment Grade Index Files')
 else:
@@ -66,4 +69,5 @@ else:
 MySite.Disconnect()
 MySite.TECommand('exit')
 print(MySite.Status)
+
 
